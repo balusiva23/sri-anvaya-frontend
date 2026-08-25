@@ -1,12 +1,30 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
+import { Mail, Phone, MapPin, Send, CheckCircle2, Clock, Building2 } from 'lucide-react';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [contactInfo, setContactInfo] = useState({
+    headquartersTitle: 'National Headquarters',
+    headquartersSubtitle: 'Serving Chennai, Bengaluru, Hyderabad, Mumbai, Delhi-NCR, and Overseas NRIs.',
+    operationsCenterTitle: 'Operations Centre',
+    address: 'Heritage Arcade, North Mada Street, Mylapore, Chennai, TN 600004',
+    phone: '+91 98840 12345 / +91 44 2499 5500',
+    email: 'care@srianvaya.com / support@srianvaya.com',
+    timings: '8 AM - 8 PM IST (Mon - Sun)',
+  });
+
+  useEffect(() => {
+    apiFetch('/settings/contact-info')
+      .then((data) => {
+        if (data) setContactInfo(data);
+      })
+      .catch((err) => console.log('Loaded default contact info:', err));
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,43 +51,69 @@ export default function ContactPage() {
 
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Info Card */}
+          {/* Dynamic Info Card Configured by Super Admin */}
           <div className="bg-warmwhite rounded-3xl p-8 border border-sand shadow-sm space-y-8">
             <div>
-              <h3 className="font-cinzel text-2xl font-bold text-maroon-900">National Headquarters</h3>
-              <p className="mt-2 text-sm text-charcoal-800/70 font-serif">
-                Serving Chennai, Bengaluru, Hyderabad, Mumbai, Delhi-NCR, and Overseas NRIs.
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-maroon-100/80 text-maroon-900 text-xs font-bold mb-3">
+                <Building2 className="w-3.5 h-3.5 text-gold-600" />
+                <span>Verified National Office</span>
+              </div>
+              <h3 className="font-cinzel text-2xl font-bold text-maroon-900">
+                {contactInfo.headquartersTitle}
+              </h3>
+              <p className="mt-2 text-sm text-charcoal-800/70 font-serif leading-relaxed">
+                {contactInfo.headquartersSubtitle}
               </p>
             </div>
 
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-xl bg-maroon-50 text-maroon-700 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-maroon-50 text-maroon-700 flex items-center justify-center shrink-0 border border-maroon-100">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-charcoal-900">Operations Centre</h4>
-                  <p className="text-xs text-charcoal-800/70 mt-0.5">Heritage Arcade, North Mada Street, Mylapore, Chennai, TN 600004</p>
+                  <h4 className="text-sm font-bold text-charcoal-900">
+                    {contactInfo.operationsCenterTitle || 'Operations Centre'}
+                  </h4>
+                  <p className="text-xs text-charcoal-800/70 mt-0.5 leading-relaxed">
+                    {contactInfo.address}
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-xl bg-maroon-50 text-maroon-700 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-maroon-50 text-maroon-700 flex items-center justify-center shrink-0 border border-maroon-100">
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-charcoal-900">Direct Support Hotline</h4>
-                  <p className="text-xs text-charcoal-800/70 mt-0.5">+91 98840 12345 / +91 44 2499 5500 (8 AM - 8 PM IST)</p>
+                  <p className="text-xs text-charcoal-800/70 mt-0.5 font-semibold text-maroon-900">
+                    {contactInfo.phone}
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 rounded-xl bg-maroon-50 text-maroon-700 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-maroon-50 text-maroon-700 flex items-center justify-center shrink-0 border border-maroon-100">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-charcoal-900">Operating Hours</h4>
+                  <p className="text-xs text-charcoal-800/70 mt-0.5">
+                    {contactInfo.timings}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 rounded-xl bg-maroon-50 text-maroon-700 flex items-center justify-center shrink-0 border border-maroon-100">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-charcoal-900">Email Inquiries</h4>
-                  <p className="text-xs text-charcoal-800/70 mt-0.5">care@srianvaya.com / support@srianvaya.com</p>
+                  <p className="text-xs text-charcoal-800/70 mt-0.5 font-mono">
+                    {contactInfo.email}
+                  </p>
                 </div>
               </div>
             </div>
@@ -150,7 +194,7 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-maroon-700 hover:bg-maroon-800 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center space-x-2"
+                  className="w-full py-3.5 rounded-xl bg-maroon-700 hover:bg-maroon-800 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span>Submit Inquiry</span>

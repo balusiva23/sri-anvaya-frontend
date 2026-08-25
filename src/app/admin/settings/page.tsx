@@ -26,10 +26,14 @@ import {
   Check,
   Sparkles,
   Layers,
+  Building2,
+  MapPin,
+  Phone,
+  Clock,
 } from 'lucide-react';
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState<'INFRA' | 'BACKUP' | 'BUSINESS'>('INFRA');
+  const [activeTab, setActiveTab] = useState<'INFRA' | 'CONTACT' | 'BACKUP' | 'BUSINESS'>('INFRA');
   const [infraConfig, setInfraConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [savingService, setSavingService] = useState<string | null>(null);
@@ -52,6 +56,21 @@ export default function AdminSettingsPage() {
   const [smsForm, setSmsForm] = useState({ provider: 'DLT Fast2SMS', apiKey: '', senderId: 'ANVAYA' });
   const [welfarePercent, setWelfarePercent] = useState(12);
 
+  // Dynamic Contact Form State (National Headquarters & Get In Touch)
+  const [contactForm, setContactForm] = useState({
+    headquartersTitle: 'National Headquarters',
+    headquartersSubtitle: 'Serving Chennai, Bengaluru, Hyderabad, Mumbai, Delhi-NCR, and Overseas NRIs.',
+    operationsCenterTitle: 'Operations Centre',
+    address: 'Heritage Arcade, North Mada Street, Mylapore, Chennai, TN 600004',
+    phone: '+91 98840 12345 / +91 44 2499 5500',
+    email: 'care@srianvaya.com / support@srianvaya.com',
+    timings: '8 AM - 8 PM IST (Mon - Sun)',
+    footerLocations: 'Mylapore / Bengaluru / Hyderabad (Expanding Pan-India & NRI Services)',
+    welfareBadgeText: '12% Provider Welfare Committed',
+    tagline: 'Honouring Roots. Enriching Generations.',
+  });
+  const [savingContact, setSavingContact] = useState(false);
+
   // Backup & Restore State
   const [backupStats, setBackupStats] = useState<any>(null);
   const [selectedBackupFile, setSelectedBackupFile] = useState<File | null>(null);
@@ -68,14 +87,21 @@ export default function AdminSettingsPage() {
   const loadAllConfigs = async () => {
     try {
       setLoading(true);
-      const [config, settings, backupSnapshot] = await Promise.all([
+      const [config, settings, backupSnapshot, contactInfo] = await Promise.all([
         apiFetch('/settings/infra-config'),
         apiFetch('/settings'),
         apiFetch('/settings/backup/export'),
+        apiFetch('/settings/contact-info').catch(() => null),
       ]);
 
       setInfraConfig(config);
       setBackupStats(backupSnapshot?.summary);
+      if (contactInfo) {
+        setContactForm((prev) => ({
+          ...prev,
+          ...contactInfo,
+        }));
+      }
 
       if (config.storage?.activeProvider) {
         setActiveStorageProvider(config.storage.activeProvider);
@@ -299,6 +325,18 @@ export default function AdminSettingsPage() {
           >
             <Server className="w-4 h-4" />
             <span>Infrastructure & Gateways</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('CONTACT')}
+            className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${
+              activeTab === 'CONTACT'
+                ? 'bg-maroon-700 text-white shadow-md'
+                : 'bg-warmwhite border border-sand text-charcoal-800 hover:bg-cream/40'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>🏛️ National Headquarters & Contact</span>
           </button>
 
           <button
@@ -946,7 +984,221 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        {/* TAB 2: DATABASE BACKUP & RESTORE */}
+        {/* TAB 2: NATIONAL HEADQUARTERS & GET IN TOUCH (DYNAMIC CONTACT MANAGER) */}
+        {activeTab === 'CONTACT' && (
+          <div className="space-y-8">
+            <div className="bg-warmwhite rounded-3xl p-6 sm:p-8 border border-sand shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-sand">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 rounded-2xl bg-maroon-100 text-maroon-800 flex items-center justify-center border border-gold-500/30">
+                    <Building2 className="w-6 h-6 text-maroon-900" />
+                  </div>
+                  <div>
+                    <h3 className="font-cinzel text-xl font-bold text-maroon-900">
+                      National Headquarters & Public Contact Manager
+                    </h3>
+                    <p className="text-xs text-charcoal-800/70">
+                      Super Admin control center to dynamically configure Headquarters title, operations address, support phone numbers, email inboxes, and website footer coordinates.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      setSavingContact(true);
+                      const res = await apiFetch('/settings/contact-info', {
+                        method: 'PUT',
+                        body: JSON.stringify(contactForm),
+                      });
+                      showNotification('success', res.message || 'National Headquarters and Contact coordinates updated successfully!');
+                    } catch (err: any) {
+                      showNotification('error', err.message);
+                    } finally {
+                      setSavingContact(false);
+                    }
+                  }}
+                  disabled={savingContact}
+                  className="px-6 py-3 rounded-2xl bg-maroon-700 hover:bg-maroon-800 text-white font-bold text-xs shadow-md flex items-center space-x-2 shrink-0 transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  <Save className="w-4 h-4 text-gold-300" />
+                  <span>{savingContact ? 'Saving Changes...' : 'Save Headquarters & Contact'}</span>
+                </button>
+              </div>
+
+              {/* Form Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 1. Headquarters Info */}
+                <div className="space-y-4 p-5 rounded-2xl bg-canvas border border-sand">
+                  <h4 className="font-cinzel text-sm font-bold text-maroon-900 flex items-center space-x-2">
+                    <Building2 className="w-4 h-4 text-gold-600" />
+                    <span>Headquarters Title & Coverage</span>
+                  </h4>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Headquarters Section Title
+                    </label>
+                    <input
+                      type="text"
+                      value={contactForm.headquartersTitle}
+                      onChange={(e) => setContactForm({ ...contactForm, headquartersTitle: e.target.value })}
+                      placeholder="National Headquarters"
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Coverage & Service Area Subtitle
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={contactForm.headquartersSubtitle}
+                      onChange={(e) => setContactForm({ ...contactForm, headquartersSubtitle: e.target.value })}
+                      placeholder="Serving Chennai, Bengaluru, Hyderabad, Mumbai, Delhi-NCR, and Overseas NRIs."
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs leading-relaxed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Operations Centre Subheading
+                    </label>
+                    <input
+                      type="text"
+                      value={contactForm.operationsCenterTitle}
+                      onChange={(e) => setContactForm({ ...contactForm, operationsCenterTitle: e.target.value })}
+                      placeholder="Operations Centre"
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Full Physical Headquarters Address
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={contactForm.address}
+                      onChange={(e) => setContactForm({ ...contactForm, address: e.target.value })}
+                      placeholder="Heritage Arcade, North Mada Street, Mylapore, Chennai, TN 600004"
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Communication Lines */}
+                <div className="space-y-4 p-5 rounded-2xl bg-canvas border border-sand">
+                  <h4 className="font-cinzel text-sm font-bold text-maroon-900 flex items-center space-x-2">
+                    <Phone className="w-4 h-4 text-gold-600" />
+                    <span>Hotline Numbers, Email & Hours</span>
+                  </h4>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Direct Support Hotline (Phones)
+                    </label>
+                    <input
+                      type="text"
+                      value={contactForm.phone}
+                      onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                      placeholder="+91 98840 12345 / +91 44 2499 5500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs font-semibold font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Official Support Emails
+                    </label>
+                    <input
+                      type="text"
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                      placeholder="care@srianvaya.com / support@srianvaya.com"
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs font-semibold font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Operating Hours & Timings
+                    </label>
+                    <input
+                      type="text"
+                      value={contactForm.timings}
+                      onChange={(e) => setContactForm({ ...contactForm, timings: e.target.value })}
+                      placeholder="8 AM - 8 PM IST (Mon - Sun)"
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-charcoal-800/70 mb-1">
+                      Footer Regional Centers (&quot;Get In Touch&quot;)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={contactForm.footerLocations}
+                      onChange={(e) => setContactForm({ ...contactForm, footerLocations: e.target.value })}
+                      placeholder="Mylapore / Bengaluru / Hyderabad (Expanding Pan-India & NRI Services)"
+                      className="w-full px-4 py-2.5 rounded-xl border border-sand bg-warmwhite text-xs leading-relaxed"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Preview Box */}
+              <div className="mt-8 p-6 rounded-2xl bg-charcoal-950 text-sand border border-charcoal-800 space-y-4">
+                <div className="flex items-center justify-between border-b border-charcoal-800 pb-3">
+                  <div className="flex items-center space-x-2">
+                    <Sparkles className="w-4 h-4 text-gold-400" />
+                    <span className="text-xs font-bold text-warmwhite uppercase tracking-wider">
+                      Live Preview (How Visitors See This On Contact & Footer)
+                    </span>
+                  </div>
+                  <span className="text-[10px] bg-gold-900/40 text-gold-300 px-2 py-0.5 rounded-full font-mono border border-gold-600/30">
+                    Auto-Synced
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+                  <div className="bg-charcoal-900/60 p-4 rounded-xl space-y-2 border border-charcoal-800">
+                    <p className="font-bold text-gold-400 font-cinzel text-sm">{contactForm.headquartersTitle}</p>
+                    <p className="text-[11px] text-sand/70">{contactForm.headquartersSubtitle}</p>
+                    <p className="text-warmwhite pt-1 font-semibold flex items-center space-x-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                      <span>{contactForm.address}</span>
+                    </p>
+                    <p className="text-sand/80 flex items-center space-x-1.5">
+                      <Clock className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                      <span>{contactForm.timings}</span>
+                    </p>
+                  </div>
+
+                  <div className="bg-charcoal-900/60 p-4 rounded-xl space-y-2 border border-charcoal-800">
+                    <p className="font-bold text-gold-400 font-cinzel text-sm">Footer &quot;Get In Touch&quot;</p>
+                    <p className="text-warmwhite font-semibold flex items-center space-x-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                      <span>{contactForm.footerLocations}</span>
+                    </p>
+                    <p className="text-warmwhite font-mono flex items-center space-x-1.5">
+                      <Phone className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                      <span>{contactForm.phone}</span>
+                    </p>
+                    <p className="text-warmwhite font-mono flex items-center space-x-1.5">
+                      <Mail className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                      <span>{contactForm.email}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: DATABASE BACKUP & RESTORE */}
         {activeTab === 'BACKUP' && (
           <div className="space-y-8">
             <div className="bg-warmwhite rounded-3xl p-6 sm:p-8 border border-sand shadow-sm space-y-6">

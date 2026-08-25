@@ -1,8 +1,36 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Heart, ShieldCheck, Phone, Mail, MapPin } from 'lucide-react';
+import { apiFetch } from '../lib/api';
+import { ShieldCheck, Phone, Mail, MapPin } from 'lucide-react';
 
 export default function Footer() {
+  const [contactInfo, setContactInfo] = useState({
+    footerLocations: 'Mylapore / Bengaluru / Hyderabad (Expanding Pan-India & NRI Services)',
+    phone: '+91 98840 12345 / +91 44 2499 5500',
+    email: 'support@srianvaya.com',
+    welfareBadgeText: '12% Provider Welfare Committed',
+    tagline: 'Honouring Roots. Enriching Generations.',
+  });
+
+  useEffect(() => {
+    apiFetch('/settings/contact-info')
+      .then((data) => {
+        if (data) {
+          setContactInfo((prev) => ({
+            ...prev,
+            footerLocations: data.footerLocations || prev.footerLocations,
+            phone: data.phone || prev.phone,
+            email: data.email || prev.email,
+            welfareBadgeText: data.welfareBadgeText || prev.welfareBadgeText,
+            tagline: data.tagline || prev.tagline,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer className="bg-charcoal-950 text-sand border-t border-charcoal-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -18,14 +46,14 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm text-sand/80 leading-relaxed font-serif italic">
-              &quot;Honouring Roots. Enriching Generations.&quot;
+              &quot;{contactInfo.tagline}&quot;
             </p>
             <p className="text-xs text-sand/60 leading-relaxed">
               Sri Anvaya is a technology-enabled traditional service management ecosystem combining SaaS discipline with authentic Vedic integrity.
             </p>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold-900/30 border border-gold-600/30 text-gold-300 text-xs">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold-900/30 border border-gold-600/30 text-gold-300 text-xs font-semibold">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>12% Provider Welfare Committed</span>
+              <span>{contactInfo.welfareBadgeText}</span>
             </div>
           </div>
 
@@ -97,7 +125,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Contact & Operations */}
+          {/* Col 4: Dynamic Get In Touch Configured by Super Admin */}
           <div>
             <h4 className="font-cinzel text-sm font-semibold text-warmwhite tracking-wider uppercase mb-4">
               Get In Touch
@@ -105,15 +133,15 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-sand/70">
               <li className="flex items-start space-x-3">
                 <MapPin className="w-4 h-4 text-gold-400 mt-0.5 shrink-0" />
-                <span>Mylapore / Bengaluru / Hyderabad (Expanding Pan-India & NRI Services)</span>
+                <span className="leading-relaxed">{contactInfo.footerLocations}</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-gold-400 shrink-0" />
-                <span>+91 98840 12345 / +91 44 2499 5500</span>
+                <span className="font-mono text-xs text-warmwhite">{contactInfo.phone}</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-gold-400 shrink-0" />
-                <span>support@srianvaya.com</span>
+                <span className="font-mono text-xs text-warmwhite">{contactInfo.email}</span>
               </li>
             </ul>
           </div>
