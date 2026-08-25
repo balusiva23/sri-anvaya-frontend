@@ -4,14 +4,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { useSidebar } from '../context/SidebarContext';
 import {
-  Bell,
-  Search,
+  Menu,
   User,
   LogOut,
   ChevronDown,
   ShieldCheck,
-  Settings,
   UserCircle,
   ExternalLink,
 } from 'lucide-react';
@@ -24,6 +23,7 @@ interface TopHeaderProps {
 
 export default function TopHeader({ title, subtitle, actions }: TopHeaderProps) {
   const { user, logout } = useAuth();
+  const { toggleSidebar } = useSidebar();
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -56,27 +56,46 @@ export default function TopHeader({ title, subtitle, actions }: TopHeaderProps) 
   };
 
   return (
-    <header className="h-20 bg-warmwhite border-b border-sand px-6 sm:px-8 flex items-center justify-between sticky top-0 z-40">
-      <div>
-        <h1 className="text-xl font-bold text-charcoal-900 font-serif tracking-tight">{title}</h1>
-        {subtitle && <p className="text-xs text-charcoal-800/60 mt-0.5">{subtitle}</p>}
+    <header className="h-20 bg-warmwhite border-b border-sand px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30">
+      {/* Left: Mobile Hamburger & Page Title */}
+      <div className="flex items-center space-x-3 min-w-0 pr-2">
+        {/* Mobile Hamburger Toggle Button (Hidden on Desktop) */}
+        <button
+          onClick={toggleSidebar}
+          className="lg:hidden p-2 -ml-1 rounded-xl text-charcoal-800 hover:text-maroon-900 hover:bg-cream/60 focus:outline-none focus:ring-2 focus:ring-maroon-700/20 transition-all shrink-0"
+          aria-label="Open Navigation Menu"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-xl font-bold text-charcoal-900 font-serif tracking-tight truncate">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-[11px] sm:text-xs text-charcoal-800/60 mt-0.5 truncate hidden sm:block">
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center space-x-4">
-        {actions}
+      {/* Right: Actions & User Dropdown */}
+      <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
+        {actions && <div className="shrink-0">{actions}</div>}
 
         {/* Profile Dropdown */}
-        <div className="relative pl-4 border-l border-sand" ref={dropdownRef}>
+        <div className="relative pl-2 sm:pl-4 border-l border-sand shrink-0" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center space-x-3 p-1.5 rounded-2xl hover:bg-cream/40 transition-all focus:outline-none"
+            className="flex items-center space-x-2 sm:space-x-3 p-1 rounded-2xl hover:bg-cream/40 transition-all focus:outline-none"
             aria-expanded={dropdownOpen}
           >
-            <div className="text-right hidden sm:block">
+            <div className="text-right hidden md:block">
               <p className="text-xs font-bold text-charcoal-900 leading-none">{user?.fullName || 'User Profile'}</p>
               <p className="text-[10px] text-charcoal-800/60 mt-1 font-mono">{user?.email || ''}</p>
             </div>
-            <div className="w-9 h-9 rounded-full bg-maroon-700 text-gold-300 font-cinzel font-bold text-xs flex items-center justify-center border-2 border-gold-500/40 shadow-sm">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-maroon-700 text-gold-300 font-cinzel font-bold text-xs flex items-center justify-center border-2 border-gold-500/40 shadow-sm">
               {user?.fullName?.charAt(0) || <User className="w-4 h-4" />}
             </div>
             <ChevronDown
@@ -131,7 +150,7 @@ export default function TopHeader({ title, subtitle, actions }: TopHeaderProps) 
               {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 font-bold text-xs transition-colors"
+                className="w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-rose-700 hover:bg-rose-50 font-bold text-xs transition-colors text-left"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Log Out of Sri Anvaya</span>

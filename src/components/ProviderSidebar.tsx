@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { useSidebar } from '../context/SidebarContext';
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -14,6 +15,7 @@ import {
   LogOut,
   ChevronRight,
   ShieldAlert,
+  X,
 } from 'lucide-react';
 
 const navItems = [
@@ -27,23 +29,37 @@ const navItems = [
 export default function ProviderSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { isMobileOpen, closeSidebar } = useSidebar();
 
-  return (
-    <aside className="w-64 bg-warmwhite border-r border-sand flex flex-col h-screen sticky top-0">
-      <div className="h-20 px-6 flex items-center space-x-3 border-b border-sand">
-        <div className="w-9 h-9 rounded-lg bg-gold-600 text-maroon-900 flex items-center justify-center font-cinzel font-bold text-lg shadow-sm">
-          ॐ
+  const sidebarContent = (
+    <div className="w-72 lg:w-64 bg-warmwhite border-r border-sand flex flex-col h-full select-none">
+      {/* Brand Header with Close X Button on Mobile */}
+      <div className="h-20 px-6 flex items-center justify-between border-b border-sand shrink-0">
+        <div className="flex items-center space-x-3">
+          <div className="w-9 h-9 rounded-lg bg-gold-600 text-maroon-900 flex items-center justify-center font-cinzel font-bold text-lg shadow-sm shrink-0">
+            ॐ
+          </div>
+          <div>
+            <span className="font-cinzel font-bold text-lg tracking-wider text-maroon-900 block leading-tight">
+              SRI ANVAYA
+            </span>
+            <span className="text-[9px] tracking-widest uppercase text-gold-700 font-semibold block">
+              Vedic Provider Portal
+            </span>
+          </div>
         </div>
-        <div>
-          <span className="font-cinzel font-bold text-lg tracking-wider text-maroon-900 block leading-tight">
-            SRI ANVAYA
-          </span>
-          <span className="text-[9px] tracking-widest uppercase text-gold-700 font-semibold block">
-            Vedic Provider Portal
-          </span>
-        </div>
+
+        {/* Mobile Close X Button */}
+        <button
+          onClick={closeSidebar}
+          className="lg:hidden p-1.5 rounded-xl text-charcoal-800/60 hover:text-maroon-900 hover:bg-cream/60 transition-colors"
+          aria-label="Close sidebar"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
+      {/* Navigation links */}
       <div className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -52,6 +68,7 @@ export default function ProviderSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={closeSidebar}
               className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-maroon-700 text-white shadow-sm'
@@ -68,7 +85,8 @@ export default function ProviderSidebar() {
         })}
       </div>
 
-      <div className="p-4 border-t border-sand">
+      {/* Welfare info box & footer */}
+      <div className="p-4 border-t border-sand shrink-0">
         <div className="bg-gold-50 border border-gold-200 rounded-xl p-3 mb-3">
           <div className="flex items-center space-x-1.5 text-gold-800 font-semibold text-xs">
             <ShieldAlert className="w-4 h-4 text-gold-700" />
@@ -90,14 +108,43 @@ export default function ProviderSidebar() {
             </div>
           </div>
           <button
-            onClick={logout}
-            className="p-1.5 text-charcoal-800/60 hover:text-maroon-700 rounded-lg hover:bg-maroon-50"
+            onClick={() => {
+              closeSidebar();
+              logout();
+            }}
+            className="p-1.5 text-charcoal-800/60 hover:text-maroon-700 rounded-lg hover:bg-maroon-50 transition-colors"
             title="Sign out"
           >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* 1. Desktop Persistent Sidebar */}
+      <aside className="hidden lg:flex flex-col h-screen sticky top-0 shrink-0">
+        {sidebarContent}
+      </aside>
+
+      {/* 2. Mobile Slide-Over Drawer with Backdrop */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-charcoal-950/70 backdrop-blur-sm transition-opacity"
+            onClick={closeSidebar}
+            aria-hidden="true"
+          />
+
+          {/* Drawer */}
+          <div className="fixed inset-y-0 left-0 z-50 flex shadow-2xl animate-in slide-in-from-left duration-250">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

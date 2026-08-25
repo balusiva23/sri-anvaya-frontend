@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '../context/AuthContext';
+import { SidebarProvider } from '../context/SidebarContext';
 
 export const metadata: Metadata = {
   title: 'Sri Anvaya — Sradham 360 | Honouring Roots. Enriching Generations.',
@@ -17,7 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-canvas min-h-screen text-charcoal-900 antialiased selection:bg-gold-200 selection:text-maroon-900">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <SidebarProvider>{children}</SidebarProvider>
+        </AuthProvider>
       </body>
     </html>
   );
